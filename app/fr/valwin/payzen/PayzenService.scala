@@ -1,6 +1,7 @@
 package fr.valwin.payzen
 import fr.valwin.payzen.PayzenPlugin
 import fr.valwin.payzen.Signature
+import play.api.Play._
 
 /**
  * @author Valentin Kasas
@@ -73,10 +74,12 @@ object PayzenService {
 
   lazy val mandatoryKeys = paramatersDefinition.filter(_._4 == "X").map(_._1).toSet
 
-  private def checkMandatoryParameters(params: Data) {
+  private def checkMandatoryParameters(params: Data):Either[PayzenError, Data] = {
     val missingMandatory = mandatoryKeys -- params.keySet.intersect(mandatoryKeys)
     if(!missingMandatory.isEmpty){
-      throw MissingMandatoryParameter(missingMandatory)
+      Left(MissingMandatoryParameter(missingMandatory))
+    } else {
+      Right(params)
     }
   }
 
@@ -88,20 +91,47 @@ object PayzenService {
    * parameter format definition.
    *
    * @param parameters a Map[String,String] representing the form data
-   * @return a Map[String, String] with all the given parameters plus
-   *         the required signature
+   * @return either a Map[String, String] with all the given parameters plus
+   *            the required signature
+   *         or a MissingMandatoryParameter containing the missing keys
    *
-   * @throws IllegalArgumentException if some mandatory parameters are missing
    */
-  def verifyAndSign(parameters: Data): Data = {
+  def verifyAndSign(parameters: Data):Either[PayzenError,Data] = {
     import play.api.Play.current
     val certificate = current.plugin[PayzenPlugin].get.getCertificate
     val data = parameters + ("signature" -> Signature.computeHash(parameters, certificate))
     checkMandatoryParameters(data)
-    data
   }
 
-  case class MissingMandatoryParameter(missingKeys : Set[String]) extends RuntimeException
+  /**
+   * Use this method to verify the authenticity of the form POSTed on your
+   * server-server return URL
+   *
+   * @param data the form data, as a Map[String, String]
+   * @return either MissingSignature if the signature is absent from the data
+   *         or SignatureError if the signature does not match the data + certificate
+   *         or the data itself if the signature is correct
+   */
+  def verifySignature(data:Data):Either[PayzenError, Data] = {
+    if(!data.contains("signature")){
+      Left(MissingSignature)
+    } else {
+      import play.api.Play.current
+      val signature = data("signature")
+      val certificate = current.plugin[PayzenPlugin].get.getCertificate
+      if(Signature.computeHash(data - "signature", certificate) != signature) {
+        Left(SignatureError)
+      } else {
+        Right(data)
+      }
+    }
+  }
+
+
+  trait PayzenError
+  case object SignatureError extends PayzenError
+  case object MissingSignature extends PayzenError
+  case class MissingMandatoryParameter(missingKeys : Set[String]) extends PayzenError
 
 }
 
