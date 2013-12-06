@@ -7,11 +7,7 @@ object ApplicationBuild extends Build {
   val appName         = "payzen-module"
   val appVersion      = "1.0-SNAPSHOT"
 
-  val appDependencies = Seq(
-    // Add your project dependencies here,
-    jdbc,
-    anorm
-  )
+  val appDependencies = Seq()
 
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
