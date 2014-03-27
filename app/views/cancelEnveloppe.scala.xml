@@ -1,0 +1,16 @@
+@(shopId: String, transDate: javax.xml.datatype.XMLGregorianCalendar, transId: String, seqNb: Int, ctxMode: String, comment: String, signature: String)
+<soap11:Envelope xmlns:soap11="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+xmlns:tns="http://v3.ws.vads.lyra.com/">
+    <soap11:Body>
+        <tns:cancel>
+            <shopId>@shopId</shopId>
+            <transmissionDate>@transDate.toXMLFormat</transmissionDate>
+            <transactionId>@transId</transactionId>
+            <sequenceNb>@seqNb</sequenceNb>
+            <ctxMode>@ctxMode</ctxMode>
+            <comment>@comment</comment>
+            <wsSignature>@signature</wsSignature>
+        </tns:cancel>
+    </soap11:Body>
+</soap11:Envelope>
