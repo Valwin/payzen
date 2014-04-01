@@ -1,8 +1,5 @@
 import sbt._
 import Keys._
-import sbtscalaxb.Plugin._
-import ScalaxbKeys._
-import play.Project._
 
 object ApplicationBuild extends Build {
 
@@ -15,13 +12,11 @@ object ApplicationBuild extends Build {
 
 
 
-  val main = play.Project(appName, appVersion, appDependencies, settings = Defaults.defaultSettings ++ scalaxbSettings).settings(
+  val main = play.Project(appName, appVersion, appDependencies).settings(
     organization := "fr.valwin",
     publishMavenStyle := true,
     publishTo := Some("valwin-snapshots" at "http://nexus.valwin.fr/nexus/content/repositories/valwin-snapshots"),
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    packageName in scalaxb in Compile := "fr.valwin.payzen.soap",
-    sourceGenerators in Compile <+= scalaxb in Compile
+    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
   )
 
 }
