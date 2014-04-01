@@ -2,11 +2,11 @@ package fr.valwin.payzen
 
 import play.api.mvc.{Results, BodyParsers, BodyParser}
 import play.api.Play.current
+import play.api.libs.concurrent.Execution.Implicits._
 import org.joda.time.DateTime
 import javax.xml.datatype.DatatypeFactory
 import java.util.GregorianCalendar
 import org.joda.time.format.DateTimeFormat
-import scalaxb.CustomHttpClients
 
 /**
  * @author Valentin Kasas
@@ -79,7 +79,6 @@ object PayzenService {
 
   lazy val mandatoryKeys = paramatersDefinition.filter(_._4 == "X").map(_._1).toSet
 
-  lazy val payzen = (new fr.valwin.payzen.soap.StandardBindings with scalaxb.Soap11Clients with CustomHttpClients).service
 
   private def checkMandatoryParameters(params: Data):Either[PayzenError, Data] = {
     val missingMandatory = mandatoryKeys -- params.keySet.intersect(mandatoryKeys)
